@@ -1,0 +1,47 @@
+const Discord = require("discord.js");
+const fs = require("fs");
+let coins = require("../../coins.json");
+
+module.exports.run = async (bot, message, args) => {
+    if(!coins[message.author.id]){
+        return message.reply("You don't have any coins! (talk more to get coins)")
+    }
+
+
+    let sCoins = coins[message.author.id].coins;
+
+    if(sCoins < 20) return message.reply("You don't have enough coins to buy this item.");
+
+    coins[message.author.id] = {
+        coins: sCoins - 20
+    };
+
+    let boughts = message.guild.member(message.mentions.users.first() || message.guild.members.get(args[0]));
+    if(!boughts) return message.channel.send("Please tag yourself or the person you buying this item for.");
+    let srole = message.guild.roles.find(`name`, "nothing");
+    //start of create role
+    if(!srole){
+        try{
+            srole = await message.guild.createRole({
+                name: "nothing",
+                color: "#000000",
+                permissions:[]
+            });
+        }catch(e){
+            console.log(e.stack);
+        }
+}
+
+await(boughts.addRole(srole.id));
+
+    message.channel.send(`${message.author} bought nothing!`);
+
+    fs.writeFile("./coins.json", JSON.stringify(coins), (err) => {
+        if(err) console.log(err)
+    });
+
+}
+
+module.exports.help = {
+    name: "buy_nothing"
+}
